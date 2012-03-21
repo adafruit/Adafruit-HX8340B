@@ -25,18 +25,6 @@ Adafruit_HX8340B::Adafruit_HX8340B(int8_t RST, int8_t CS) {
 }
 
 
-// the most basic function, set a single pixel
-void Adafruit_HX8340B::drawPixel(uint16_t x, uint16_t y, uint16_t color) {
-  if ((x >= width()) || (y >= height()))
-    return;
-	
-  setWindow(x, y, x+1, y+1);
-  *csport &= ~cspinmask;
-  writeData((color>>8) & 0xFF);
-  writeData(color & 0xFF);
-  *csport |=  cspinmask;
-}
-
 void Adafruit_HX8340B::begin() {
   // Constructor for underlying GFX library
   constructor(176, 220);
@@ -200,15 +188,37 @@ void Adafruit_HX8340B::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, 
   *csport |=  cspinmask;
 }
 
+
+// the most basic function, set a single pixel
+void Adafruit_HX8340B::drawPixel(uint16_t x, uint16_t y, uint16_t color) {
+  if ((x >= width()) || (y >= height()))
+    return;
+	
+  setWindow(x, y, x+1, y+1);
+  *csport &= ~cspinmask;
+  writeData((color>>8) & 0xFF);
+  writeData(color & 0xFF);
+  *csport |=  cspinmask;
+}
+
+
 void Adafruit_HX8340B::HX8340B_command(uint8_t c) { 
   // Prepend leading bit instead of D/C pin
 
   if (hwSPI) {
     uint8_t saved_spimode = SPCR;
     SPCR = 0;
+
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined (__AVR_ATmega328__) || defined(__AVR_ATmega8__)
+    PORTB &= ~_BV(3);  // PB3 = MOSI
+    PORTB |= _BV(5);  // PB5 = SCLK
+    PORTB &= ~_BV(5);
+    // also do mega next eh?
+#else
     *dataport &=  ~datapinmask;
-    *clkport &= ~clkpinmask;
     *clkport |=  clkpinmask;
+    *clkport &= ~clkpinmask;
+#endif
 
     SPCR = saved_spimode;
 
@@ -216,39 +226,45 @@ void Adafruit_HX8340B::HX8340B_command(uint8_t c) {
     while(!(SPSR & _BV(SPIF)));
   } else {
     *dataport &=  ~datapinmask;
-    *clkport &= ~clkpinmask;
     *clkport |=  clkpinmask;
+    *clkport &= ~clkpinmask;
     for(uint8_t bit = 0x80; bit; bit >>= 1) {
       if(c & bit) *dataport |=  datapinmask;
       else        *dataport &= ~datapinmask;
-      *clkport &= ~clkpinmask;
       *clkport |=  clkpinmask;
+      *clkport &= ~clkpinmask;
     }
   }
 }
+
 
 void Adafruit_HX8340B::writeData(uint8_t c) {
   // Prepend leading bit instead of D/C pin
   if (hwSPI) {
     uint8_t saved_spimode = SPCR;
     SPCR = 0;
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined (__AVR_ATmega328__) || defined(__AVR_ATmega8__)
+    PORTB |= _BV(3);  // PB3 = MOSI
+    PORTB |= _BV(5);  // PB5 = SCLK
+    PORTB &= ~_BV(5);
+    // also do mega next eh?
+#else
     *dataport |=  datapinmask;
-    *clkport &= ~clkpinmask;
     *clkport |=  clkpinmask;
-
+    *clkport &= ~clkpinmask;
+#endif
     SPCR = saved_spimode;
-
     SPDR = c;
     while(!(SPSR & _BV(SPIF)));
   } else {
     *dataport |=  datapinmask;
-    *clkport &= ~clkpinmask;
     *clkport |=  clkpinmask;
+    *clkport &= ~clkpinmask;
     for(uint8_t bit = 0x80; bit; bit >>= 1) {
       if(c & bit) *dataport |=  datapinmask;
       else        *dataport &= ~datapinmask;
-      *clkport &= ~clkpinmask;
       *clkport |=  clkpinmask;
+      *clkport &= ~clkpinmask;
     }
   }
 }
