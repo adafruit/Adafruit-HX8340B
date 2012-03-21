@@ -17,10 +17,12 @@ void Adafruit_HX8340B::drawPixel(uint16_t x, uint16_t y, uint16_t color) {
     return;
 	
   setposition(x, y, x+1, y+1);
-  writedata16(color);	
+  HX8340B_data((color>>8) & 0xFF);
+  HX8340B_data(color & 0xFF);
 }
 
 void Adafruit_HX8340B::begin() {
+  // Constructor for underlying GFX library
   constructor(176, 220);
 
   // set pin directions
@@ -29,12 +31,11 @@ void Adafruit_HX8340B::begin() {
   pinMode(rst, OUTPUT);
   pinMode(cs, OUTPUT);
 
-  clkport     = portOutputRegister(digitalPinToPort(sclk));
-  clkpinmask  = digitalPinToBitMask(sclk);
-  mosiport    = portOutputRegister(digitalPinToPort(sid));
-  mosipinmask = digitalPinToBitMask(sid);
-  csport      = portOutputRegister(digitalPinToPort(cs));
-  cspinmask   = digitalPinToBitMask(cs);
+  // Set pins low by default (except reset)
+  digitalWrite(sid, LOW);
+  digitalWrite(sclk, LOW);
+  digitalWrite(cs, LOW);
+  digitalWrite(rst, HIGH);
 
   // Reset the LCD
   digitalWrite(rst, HIGH);
@@ -119,19 +120,24 @@ void Adafruit_HX8340B::begin() {
   HX8340B_data(0x00);
   HX8340B_data(0x00);
   HX8340B_data(0x00); 
-  HX8340B_data(0xdb);                // 219
+  HX8340B_data(0xdb);                 // 219
 
-  HX8340B_command(HX8340B_N_RAMWR);   
+  HX8340B_command(HX8340B_N_RAMWR);
+  
+  clearDisplay();
 }
 
 // clear everything
 void Adafruit_HX8340B::clearDisplay(void) {
   uint8_t i,j;
+
   for (i=0;i<220;i++)
   {
     for (j=0;j<176;j++)
     {
-      writedata16(0x0000);
+	  // Send black
+      HX8340B_data(0x00);
+      HX8340B_data(0xFF);
     }
   }
 }
@@ -142,6 +148,7 @@ void Adafruit_HX8340B::invertDisplay(uint8_t i) {
 void Adafruit_HX8340B::HX8340B_command(uint8_t c) { 
   digitalWrite(cs, LOW);
 
+  // Append leading bit instead of D/C pin
   digitalWrite(sid, LOW);
   digitalWrite(sclk, LOW);
   digitalWrite(sclk, HIGH);
@@ -167,6 +174,7 @@ void Adafruit_HX8340B::HX8340B_command(uint8_t c) {
 void Adafruit_HX8340B::HX8340B_data(uint8_t c) {
   digitalWrite(cs, LOW);
 
+  // Append leading bit instead of D/C pin
   digitalWrite(sid, HIGH);
   digitalWrite(sclk, LOW);
   digitalWrite(sclk, HIGH);
@@ -187,11 +195,6 @@ void Adafruit_HX8340B::HX8340B_data(uint8_t c) {
 	digitalWrite(sclk, HIGH);
   } 
   digitalWrite(cs, HIGH);
-}
-
-void Adafruit_HX8340B::writedata16(uint16_t data) { 
-  HX8340B_data((data>>8) & 0xFF);
-  HX8340B_data(data & 0xFF);
 }
 
 void Adafruit_HX8340B::writereg(uint8_t reg, uint8_t value) { 

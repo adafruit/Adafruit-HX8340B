@@ -97,9 +97,7 @@
 
 class Adafruit_HX8340B : public Adafruit_GFX {
  public:
-  Adafruit_HX8340B(int8_t SID, int8_t SCLK, int8_t RST, int8_t CS) :sid(SID), sclk(SCLK), rst(RST), cs(CS) {}
-  Adafruit_HX8340B(int8_t SID, int8_t SCLK, int8_t RST) :sid(SID), sclk(SCLK), rst(RST), cs(-1) {}
-
+  Adafruit_HX8340B(int8_t SID, int8_t SCLK, int8_t RST, int8_t CS) : sid(SID), sclk(SCLK), rst(RST), cs(CS) {}
 
   void begin();
   void HX8340B_command(uint8_t c);
@@ -113,12 +111,6 @@ class Adafruit_HX8340B : public Adafruit_GFX {
 
  private:
   int8_t sid, sclk, rst, cs;
-  void fastSPIwrite(uint8_t c);
-  void slowSPIwrite(uint8_t c);
-  void writedata16(uint16_t data); 
   void writereg(uint8_t reg, uint8_t value);
   void setposition(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1);
-
-  volatile uint8_t *mosiport, *clkport, *csport;
-  uint8_t mosipinmask, clkpinmask, cspinmask;
 };
