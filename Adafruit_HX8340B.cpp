@@ -294,3 +294,14 @@ void Adafruit_HX8340B::setWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t
   HX8340B_command(HX8340B_N_RAMWR);
   *csport |=  cspinmask;
 }
+
+uint16_t Adafruit_HX8340B::Color565(uint8_t r, uint8_t g, uint8_t b) {
+  uint16_t c;
+  c = r >> 3;
+  c <<= 6;
+  c |= g >> 2;
+  c <<= 5;
+  c |= b >> 3;
+
+  return c;
+}

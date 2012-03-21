@@ -112,6 +112,8 @@ class Adafruit_HX8340B : public Adafruit_GFX {
   void drawPixel(uint16_t x, uint16_t y, uint16_t color);
   void fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t c);
   void setWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1);
+  uint16_t Color565(uint8_t r, uint8_t g, uint8_t b);
+
  private:
   int8_t sid, sclk, rst, cs;
   boolean hwSPI;
