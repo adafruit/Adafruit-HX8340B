@@ -34,8 +34,8 @@
 #define BLACK 0
 #define WHITE 1
 
-#define HX8340B_LCDWIDTH                  128
-#define HX8340B_LCDHEIGHT                 64
+#define HX8340B_LCDWIDTH                  176
+#define HX8340B_LCDHEIGHT                 220
 
 // HX8340-B(N) Commands (used by BTL221722-276L)
 #define HX8340B_N_NOP                     (0x00)
@@ -97,20 +97,27 @@
 
 class Adafruit_HX8340B : public Adafruit_GFX {
  public:
-  Adafruit_HX8340B(int8_t SID, int8_t SCLK, int8_t RST, int8_t CS) : sid(SID), sclk(SCLK), rst(RST), cs(CS) {}
+  Adafruit_HX8340B(int8_t SID, int8_t SCLK, int8_t RST, int8_t CS);
+  Adafruit_HX8340B(int8_t RST, int8_t CS);
 
   void begin();
   void HX8340B_command(uint8_t c);
-  void HX8340B_data(uint8_t c);
+  void writeData(uint8_t c);
 
   void clearDisplay(void);
   void invertDisplay(uint8_t i);
   void display();
+  void fillDisplay(uint16_t c);
 
   void drawPixel(uint16_t x, uint16_t y, uint16_t color);
-
+  void fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t c);
+  void setWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1);
  private:
   int8_t sid, sclk, rst, cs;
+  boolean hwSPI;
+
+  volatile uint8_t *dataport, *clkport, *csport;
+  uint8_t datapinmask, clkpinmask, cspinmask;
+
   void writereg(uint8_t reg, uint8_t value);
-  void setposition(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1);
 };

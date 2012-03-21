@@ -2,23 +2,39 @@
 #include <avr/pgmspace.h>
 #include <util/delay.h>
 #include <stdlib.h>
+#include <SPI.h>
 
 #include "Adafruit_GFX.h"
 #include "Adafruit_HX8340B.h"
 
-#include "glcdfont.c"
 
-// a 5x7 font table
-extern uint8_t PROGMEM font[];
+Adafruit_HX8340B::Adafruit_HX8340B(int8_t SID, int8_t SCLK, int8_t RST, int8_t CS) {
+  sid = SID;
+  sclk = SCLK;
+  rst = RST;
+  cs = CS;
+  hwSPI = false;
+}
+
+Adafruit_HX8340B::Adafruit_HX8340B(int8_t RST, int8_t CS) {
+  sid = -1;
+  sclk = -1;
+  rst = RST;
+  cs = CS;
+  hwSPI = true;
+}
+
 
 // the most basic function, set a single pixel
 void Adafruit_HX8340B::drawPixel(uint16_t x, uint16_t y, uint16_t color) {
   if ((x >= width()) || (y >= height()))
     return;
 	
-  setposition(x, y, x+1, y+1);
-  HX8340B_data((color>>8) & 0xFF);
-  HX8340B_data(color & 0xFF);
+  setWindow(x, y, x+1, y+1);
+  *csport &= ~cspinmask;
+  writeData((color>>8) & 0xFF);
+  writeData(color & 0xFF);
+  *csport |=  cspinmask;
 }
 
 void Adafruit_HX8340B::begin() {
@@ -26,14 +42,18 @@ void Adafruit_HX8340B::begin() {
   constructor(176, 220);
 
   // set pin directions
-  pinMode(sid, OUTPUT);
-  pinMode(sclk, OUTPUT);
+  if (! hwSPI) {
+    pinMode(sid, OUTPUT);
+    pinMode(sclk, OUTPUT);
+  }
   pinMode(rst, OUTPUT);
   pinMode(cs, OUTPUT);
 
   // Set pins low by default (except reset)
-  digitalWrite(sid, LOW);
-  digitalWrite(sclk, LOW);
+  if (! hwSPI) {
+    digitalWrite(sid, LOW);
+    digitalWrite(sclk, LOW);
+  }
   digitalWrite(cs, LOW);
   digitalWrite(rst, HIGH);
 
@@ -45,176 +65,216 @@ void Adafruit_HX8340B::begin() {
   digitalWrite(rst, HIGH);
   delay(50);
 
+
+  csport    = portOutputRegister(digitalPinToPort(cs));
+  cspinmask = digitalPinToBitMask(cs);
+
+  if (! hwSPI) {
+    clkport    = portOutputRegister(digitalPinToPort(sclk));
+    clkpinmask = digitalPinToBitMask(sclk);
+    dataport    = portOutputRegister(digitalPinToPort(sid));
+    datapinmask = digitalPinToBitMask(sid);
+  } else {
+    clkport    = portOutputRegister(digitalPinToPort(13));
+    clkpinmask = digitalPinToBitMask(13);
+    dataport    = portOutputRegister(digitalPinToPort(11));
+    datapinmask = digitalPinToBitMask(11);
+    SPI.begin();
+    SPI.setClockDivider(SPI_CLOCK_DIV8); // 4 MHz (half speed)
+    SPI.setBitOrder(MSBFIRST);
+    SPI.setDataMode(SPI_MODE0);
+    pinMode(13, OUTPUT);
+    pinMode(11, OUTPUT);
+  }
+
+  *csport &= ~cspinmask;
   HX8340B_command(HX8340B_N_SETEXTCMD); 
-  HX8340B_data(0xFF);
-  HX8340B_data(0x83);
-  HX8340B_data(0x40); 
+  writeData(0xFF);
+  writeData(0x83);
+  writeData(0x40); 
 
   HX8340B_command(HX8340B_N_SPLOUT); 
   delay(100);
 
   HX8340B_command(0xCA);                  // Undocumented register?
-  HX8340B_data(0x70);
-  HX8340B_data(0x00);
-  HX8340B_data(0xD9); 
-  HX8340B_data(0x01);
-  HX8340B_data(0x11); 
+  writeData(0x70);
+  writeData(0x00);
+  writeData(0xD9); 
+  writeData(0x01);
+  writeData(0x11); 
   
   HX8340B_command(0xC9);                  // Undocumented register?
-  HX8340B_data(0x90);
-  HX8340B_data(0x49);
-  HX8340B_data(0x10); 
-  HX8340B_data(0x28);
-  HX8340B_data(0x28); 
-  HX8340B_data(0x10); 
-  HX8340B_data(0x00); 
-  HX8340B_data(0x06);
+  writeData(0x90);
+  writeData(0x49);
+  writeData(0x10); 
+  writeData(0x28);
+  writeData(0x28); 
+  writeData(0x10); 
+  writeData(0x00); 
+  writeData(0x06);
   delay(20);
 
   HX8340B_command(HX8340B_N_SETGAMMAP);
-  HX8340B_data(0x60);
-  HX8340B_data(0x71);
-  HX8340B_data(0x01); 
-  HX8340B_data(0x0E);
-  HX8340B_data(0x05); 
-  HX8340B_data(0x02); 
-  HX8340B_data(0x09); 
-  HX8340B_data(0x31);
-  HX8340B_data(0x0A);
+  writeData(0x60);
+  writeData(0x71);
+  writeData(0x01); 
+  writeData(0x0E);
+  writeData(0x05); 
+  writeData(0x02); 
+  writeData(0x09); 
+  writeData(0x31);
+  writeData(0x0A);
   
   HX8340B_command(HX8340B_N_SETGAMMAN); 
-  HX8340B_data(0x67);
-  HX8340B_data(0x30);
-  HX8340B_data(0x61); 
-  HX8340B_data(0x17);
-  HX8340B_data(0x48); 
-  HX8340B_data(0x07); 
-  HX8340B_data(0x05); 
-  HX8340B_data(0x33); 
+  writeData(0x67);
+  writeData(0x30);
+  writeData(0x61); 
+  writeData(0x17);
+  writeData(0x48); 
+  writeData(0x07); 
+  writeData(0x05); 
+  writeData(0x33); 
   delay(10);
 
   HX8340B_command(HX8340B_N_SETPWCTR5); 
-  HX8340B_data(0x35);
-  HX8340B_data(0x20);
-  HX8340B_data(0x45); 
+  writeData(0x35);
+  writeData(0x20);
+  writeData(0x45); 
   
   HX8340B_command(HX8340B_N_SETPWCTR4); 
-  HX8340B_data(0x33);
-  HX8340B_data(0x25);
-  HX8340B_data(0x4c); 
+  writeData(0x33);
+  writeData(0x25);
+  writeData(0x4c); 
   delay(10);
 
   HX8340B_command(HX8340B_N_COLMOD);  // Color Mode
-  HX8340B_data(0x05);                 // 0x05 = 16bpp, 0x06 = 18bpp
+  writeData(0x05);                 // 0x05 = 16bpp, 0x06 = 18bpp
 
   HX8340B_command(HX8340B_N_DISPON); 
   delay(10);
 
   HX8340B_command(HX8340B_N_CASET); 
-  HX8340B_data(0x00);
-  HX8340B_data(0x00);
-  HX8340B_data(0x00); 
-  HX8340B_data(0xaf);                 // 175
+  writeData(0x00);
+  writeData(0x00);
+  writeData(0x00); 
+  writeData(0xaf);                 // 175
 
   HX8340B_command(HX8340B_N_PASET); 
-  HX8340B_data(0x00);
-  HX8340B_data(0x00);
-  HX8340B_data(0x00); 
-  HX8340B_data(0xdb);                 // 219
+  writeData(0x00);
+  writeData(0x00);
+  writeData(0x00); 
+  writeData(0xdb);                 // 219
 
   HX8340B_command(HX8340B_N_RAMWR);
   
-  clearDisplay();
+  *csport |=  cspinmask;
+  //clearDisplay();
 }
 
 // clear everything
 void Adafruit_HX8340B::clearDisplay(void) {
-  uint8_t i,j;
+  fillRect(0, 0, HX8340B_LCDWIDTH, HX8340B_LCDHEIGHT, 0x0000);
+}
 
-  for (i=0;i<220;i++)
-  {
-    for (j=0;j<176;j++)
-    {
-	  // Send black
-      HX8340B_data(0x00);
-      HX8340B_data(0xFF);
-    }
-  }
+
+// clear everything
+void Adafruit_HX8340B::fillDisplay(uint16_t c) {
+  fillRect(0, 0, HX8340B_LCDWIDTH, HX8340B_LCDHEIGHT, c);
 }
 
 void Adafruit_HX8340B::invertDisplay(uint8_t i) {
 }
 
-void Adafruit_HX8340B::HX8340B_command(uint8_t c) { 
-  digitalWrite(cs, LOW);
+void Adafruit_HX8340B::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t c) {
+  setWindow(x, y, x+w-1, y+h-1);
 
-  // Append leading bit instead of D/C pin
-  digitalWrite(sid, LOW);
-  digitalWrite(sclk, LOW);
-  digitalWrite(sclk, HIGH);
+  *csport &= ~cspinmask;
 
-  uint8_t i = 0;
-  for (i=0; i<8; i++) 
-  { 
-    if (c & 0x80) 
-    { 
-      digitalWrite(sid, HIGH);
-    } 
-    else 
-    { 
-      digitalWrite(sid, LOW);
-    } 
-    digitalWrite(sclk, LOW);
-    c <<= 1; 
-	digitalWrite(sclk, HIGH);
-  } 
-  digitalWrite(cs, HIGH);
+  uint8_t i,j;
+  for (uint16_t i=0;i<w*h;i++)
+  {
+    writeData(c >> 8);
+    writeData(c);
+  }
+
+  *csport |=  cspinmask;
 }
 
-void Adafruit_HX8340B::HX8340B_data(uint8_t c) {
-  digitalWrite(cs, LOW);
+void Adafruit_HX8340B::HX8340B_command(uint8_t c) { 
+  // Prepend leading bit instead of D/C pin
 
-  // Append leading bit instead of D/C pin
-  digitalWrite(sid, HIGH);
-  digitalWrite(sclk, LOW);
-  digitalWrite(sclk, HIGH);
+  if (hwSPI) {
+    uint8_t saved_spimode = SPCR;
+    SPCR = 0;
+    *dataport &=  ~datapinmask;
+    *clkport &= ~clkpinmask;
+    *clkport |=  clkpinmask;
 
-  uint8_t i = 0;
-  for (i=0; i<8; i++) 
-  { 
-    if (c & 0x80) 
-    { 
-      digitalWrite(sid, HIGH);
-    } 
-    else 
-    { 
-      digitalWrite(sid, LOW);
-    } 
-    digitalWrite(sclk, LOW);
-    c <<= 1; 
-	digitalWrite(sclk, HIGH);
-  } 
-  digitalWrite(cs, HIGH);
+    SPCR = saved_spimode;
+
+    SPDR = c;
+    while(!(SPSR & _BV(SPIF)));
+  } else {
+    *dataport &=  ~datapinmask;
+    *clkport &= ~clkpinmask;
+    *clkport |=  clkpinmask;
+    for(uint8_t bit = 0x80; bit; bit >>= 1) {
+      if(c & bit) *dataport |=  datapinmask;
+      else        *dataport &= ~datapinmask;
+      *clkport &= ~clkpinmask;
+      *clkport |=  clkpinmask;
+    }
+  }
+}
+
+void Adafruit_HX8340B::writeData(uint8_t c) {
+  // Prepend leading bit instead of D/C pin
+  if (hwSPI) {
+    uint8_t saved_spimode = SPCR;
+    SPCR = 0;
+    *dataport |=  datapinmask;
+    *clkport &= ~clkpinmask;
+    *clkport |=  clkpinmask;
+
+    SPCR = saved_spimode;
+
+    SPDR = c;
+    while(!(SPSR & _BV(SPIF)));
+  } else {
+    *dataport |=  datapinmask;
+    *clkport &= ~clkpinmask;
+    *clkport |=  clkpinmask;
+    for(uint8_t bit = 0x80; bit; bit >>= 1) {
+      if(c & bit) *dataport |=  datapinmask;
+      else        *dataport &= ~datapinmask;
+      *clkport &= ~clkpinmask;
+      *clkport |=  clkpinmask;
+    }
+  }
 }
 
 void Adafruit_HX8340B::writereg(uint8_t reg, uint8_t value) { 
+  *csport &= ~cspinmask;
   HX8340B_command(reg);
   HX8340B_command(value);
+  *csport |=  cspinmask;
 }
 
-void Adafruit_HX8340B::setposition(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1)
+void Adafruit_HX8340B::setWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1)
 {
+  *csport &= ~cspinmask;
   HX8340B_command(HX8340B_N_CASET);
-  HX8340B_data(x0>>8);
-  HX8340B_data(x0);
-  HX8340B_data(x1>>8);
-  HX8340B_data(x1);
+  writeData(x0>>8);
+  writeData(x0);
+  writeData(x1>>8);
+  writeData(x1);
   
   HX8340B_command(HX8340B_N_PASET);
-  HX8340B_data(y0>>8);
-  HX8340B_data(y0);
-  HX8340B_data(y1>>8);
-  HX8340B_data(y1);
+  writeData(y0>>8);
+  writeData(y0);
+  writeData(y1>>8);
+  writeData(y1);
 
   HX8340B_command(HX8340B_N_RAMWR);
+  *csport |=  cspinmask;
 }
