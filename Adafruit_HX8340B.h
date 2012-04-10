@@ -29,8 +29,6 @@
 
  **************************************************************************/
 
-#define swap(a, b) { uint8_t t = a; a = b; b = t; }
-
 #define BLACK 0
 #define WHITE 1
 
@@ -109,8 +107,8 @@ class Adafruit_HX8340B : public Adafruit_GFX {
   void display();
   void fillDisplay(uint16_t c);
 
-  void drawPixel(uint16_t x, uint16_t y, uint16_t color);
-  void fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t c);
+  void drawPixel(int16_t x, int16_t y, uint16_t color);
+  void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t c);
   void setWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1);
   uint16_t Color565(uint8_t r, uint8_t g, uint8_t b);
 

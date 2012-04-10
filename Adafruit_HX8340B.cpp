@@ -173,13 +173,12 @@ void Adafruit_HX8340B::fillDisplay(uint16_t c) {
 void Adafruit_HX8340B::invertDisplay(uint8_t i) {
 }
 
-void Adafruit_HX8340B::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t c) {
+void Adafruit_HX8340B::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t c) {
   setWindow(x, y, x+w-1, y+h-1);
 
   *csport &= ~cspinmask;
 
-  uint8_t i,j;
-  for (uint16_t i=0;i<w*h;i++)
+  for (int16_t i=0;i<w*h;i++)
   {
     writeData(c >> 8);
     writeData(c);
@@ -190,8 +189,8 @@ void Adafruit_HX8340B::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, 
 
 
 // the most basic function, set a single pixel
-void Adafruit_HX8340B::drawPixel(uint16_t x, uint16_t y, uint16_t color) {
-  if ((x >= width()) || (y >= height()))
+void Adafruit_HX8340B::drawPixel(int16_t x, int16_t y, uint16_t color) {
+  if ((x < 0) || (x >= width()) || (y < 0) || (y >= height()))
     return;
 	
   setWindow(x, y, x+1, y+1);
