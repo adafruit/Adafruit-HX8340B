@@ -141,8 +141,8 @@ void bmpDraw(char *filename, uint8_t x, uint8_t y) {
         if((x+w-1) >= display.width())  w = display.width()  - x;
         if((y+h-1) >= display.height()) h = display.height() - y;
 
+        display.setWindow(x, y, x+w-1, y+h-1);
         for (row=0; row<h; row++) { // For each scanline...
-          //display.goTo(x, y+row);
 
           // Seek to start of scan line.  It might seem labor-
           // intensive to be doing this on every line, but this
@@ -172,9 +172,9 @@ void bmpDraw(char *filename, uint8_t x, uint8_t y) {
             g = sdbuffer[buffidx++];
             r = sdbuffer[buffidx++];
 
-            display.drawPixel(x+col, y+row, display.Color565(r,g,b));
+            //display.drawPixel(x+col, y+row, display.Color565(r,g,b));
             // optimized!
-            //display.pushColor(display.Color565(r,g,b));
+            display.pushColor(display.Color565(r,g,b));
           } // end pixel
         } // end scanline
         Serial.print("Loaded in ");

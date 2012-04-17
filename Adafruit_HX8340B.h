@@ -102,11 +102,11 @@ class Adafruit_HX8340B : public Adafruit_GFX {
   void HX8340B_command(uint8_t c);
   void writeData(uint8_t c);
 
-  void clearDisplay(void);
   void invertDisplay(uint8_t i);
   void display();
   void fillDisplay(uint16_t c);
 
+  void pushColor(uint16_t color);
   void drawPixel(int16_t x, int16_t y, uint16_t color);
   void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t c);
   void setWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1);

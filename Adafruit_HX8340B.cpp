@@ -1,4 +1,3 @@
-//#include <Wire.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
 #include <stdlib.h>
@@ -7,7 +6,7 @@
 #include "Adafruit_GFX.h"
 #include "Adafruit_HX8340B.h"
 
-
+// use bitbang SPI (not suggested)
 Adafruit_HX8340B::Adafruit_HX8340B(int8_t SID, int8_t SCLK, int8_t RST, int8_t CS) {
   sid = SID;
   sclk = SCLK;
@@ -16,6 +15,7 @@ Adafruit_HX8340B::Adafruit_HX8340B(int8_t SID, int8_t SCLK, int8_t RST, int8_t C
   hwSPI = false;
 }
 
+// use hardware SPI
 Adafruit_HX8340B::Adafruit_HX8340B(int8_t RST, int8_t CS) {
   sid = -1;
   sclk = -1;
@@ -27,7 +27,7 @@ Adafruit_HX8340B::Adafruit_HX8340B(int8_t RST, int8_t CS) {
 
 void Adafruit_HX8340B::begin() {
   // Constructor for underlying GFX library
-  constructor(176, 220);
+  constructor(HX8340B_LCDWIDTH, HX8340B_LCDHEIGHT);
 
   // set pin directions
   if (! hwSPI) {
@@ -160,12 +160,6 @@ void Adafruit_HX8340B::begin() {
 }
 
 // clear everything
-void Adafruit_HX8340B::clearDisplay(void) {
-  fillRect(0, 0, HX8340B_LCDWIDTH, HX8340B_LCDHEIGHT, 0x0000);
-}
-
-
-// clear everything
 void Adafruit_HX8340B::fillDisplay(uint16_t c) {
   fillRect(0, 0, HX8340B_LCDWIDTH, HX8340B_LCDHEIGHT, c);
 }
@@ -173,20 +167,29 @@ void Adafruit_HX8340B::fillDisplay(uint16_t c) {
 void Adafruit_HX8340B::invertDisplay(uint8_t i) {
 }
 
-void Adafruit_HX8340B::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t c) {
+void Adafruit_HX8340B::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
   setWindow(x, y, x+w-1, y+h-1);
 
   *csport &= ~cspinmask;
 
-  for (int16_t i=0;i<w*h;i++)
+  uint32_t i = w;
+  i *= h;
+
+  while (i--)
   {
-    writeData(c >> 8);
-    writeData(c);
+    writeData((color>>8) & 0xFF);
+    writeData(color & 0xFF);
   }
 
   *csport |=  cspinmask;
 }
 
+void Adafruit_HX8340B::pushColor(uint16_t color) {
+  *csport &= ~cspinmask;
+  writeData((color>>8) & 0xFF);
+  writeData(color & 0xFF);
+  *csport |=  cspinmask;
+}
 
 // the most basic function, set a single pixel
 void Adafruit_HX8340B::drawPixel(int16_t x, int16_t y, uint16_t color) {

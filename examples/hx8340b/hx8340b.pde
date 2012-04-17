@@ -158,7 +158,7 @@ void testdrawrects(uint16_t color) {
 
 void testfillrects(uint16_t color1, uint16_t color2) {
  display.fillScreen(BLACK);
- for (int16_t x=display.height()-1; x > 6; x-=6) {
+ for (int16_t x=display.width()-1; x > 6; x-=6) {
    display.fillRect((display.width()-1)/2 -x/2, (display.height()-1)/2 -x/2 , x, x, color1);
    display.drawRect((display.width()-1)/2 -x/2, (display.height()-1)/2 -x/2 , x, x, color2);
  }
@@ -227,10 +227,10 @@ void tftPrintTest() {
   display.println("Hello World!");
   display.setTextColor(YELLOW, GREEN);
   display.setTextSize(2);
-  display.print("Hello Wo");
+  display.println("Hello World!");
   display.setTextColor(BLUE);
   display.setTextSize(3);
-  display.print(1234.567);
+  display.println(1234.567);
   delay(1500);
   display.setCursor(0, 5);
   display.fillScreen(BLACK);
@@ -242,10 +242,9 @@ void tftPrintTest() {
   display.print(p, 5);
   display.println(" Want pi?");
   display.print(8675309, HEX); // print 8,675,309 out in HEX!
-  display.print(" Print HEX");
+  display.println(" Print HEX");
   display.setTextColor(WHITE);
-  display.println("Sketch has been");
-  display.println("running for: ");
+  display.println("Sketch has been running for: ");
   display.setTextColor(MAGENTA);
   display.print(millis() / 1000);
   display.setTextColor(WHITE);
