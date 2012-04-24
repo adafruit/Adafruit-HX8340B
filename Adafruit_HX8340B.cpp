@@ -1,3 +1,19 @@
+/***************************************************
+  This is a library for the Adafruit 2.2" SPI display.
+  This library works with the Adafruit 2.2" TFT Breakout w/SD card
+  ----> http://www.adafruit.com/products/797
+
+  Check out the links above for our tutorials and wiring diagrams
+  These displays use SPI to communicate, 3 or 4 pins are required to
+  interface (RST is optional)
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit and open-source hardware by purchasing
+  products from Adafruit!
+
+  Written by Limor Fried/Ladyada for Adafruit Industries.
+  MIT license, all text above must be included in any redistribution
+ ****************************************************/
+
 #include <avr/pgmspace.h>
 #include <util/delay.h>
 #include <stdlib.h>

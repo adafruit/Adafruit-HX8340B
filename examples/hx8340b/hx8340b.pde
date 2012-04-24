@@ -1,11 +1,30 @@
+/***************************************************
+  This is an example sketch for the Adafruit 2.2" SPI display.
+  This library works with the Adafruit 2.2" TFT Breakout w/SD card
+  ----> http://www.adafruit.com/products/797
 
-#define OLED_MOSI  (11)		// SDI
-#define OLED_CLK   (13)		// SCL
-#define OLED_CS    (10)		// CS
-#define OLED_RESET (9)		// RESET
+  Check out the links above for our tutorials and wiring diagrams
+  These displays use SPI to communicate, 3 or 4 pins are required to
+  interface (RST is optional)
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit and open-source hardware by purchasing
+  products from Adafruit!
+
+  Written by Limor Fried/Ladyada for Adafruit Industries.
+  MIT license, all text above must be included in any redistribution
+ ****************************************************/
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_HX8340B.h>
+
+// if we're using fast hardware SPI on an '328 or '168 arduino such
+// as an Uno, Duemilanove, Diecimila, etc then the MOSI and CLK
+// pins are 'fixed' in hardware. If you'rere using 'bitbang' (slower)
+// interfacing, you can change any of these pins as deired.
+#define TFT_MOSI  11		// SDI
+#define TFT_CLK   13		// SCL
+#define TFT_CS    10		// CS
+#define TFT_RESET  9		// RESET
 
 // Color definitions
 #define	BLACK           0x0000
@@ -20,13 +39,13 @@
 #include <SPI.h>
 
 // Option 1: use any pins but much slower
-//Adafruit_HX8340B display(OLED_MOSI, OLED_CLK, OLED_RESET, OLED_CS);
+//Adafruit_HX8340B display(TFT_MOSI, TFT_CLK, TFT_RESET, TFT_CS);
 
 // Option 2: must use the hardware SPI pins 
 // (for UNO thats sclk = 13 and sid = 11) and pin 10 must be 
 // an output. This is much faster - also required if you want
 // to use the microSD card (see the image drawing example)
-Adafruit_HX8340B display(OLED_RESET, OLED_CS);
+Adafruit_HX8340B display(TFT_RESET, TFT_CS);
 
 float p = 3.1415926;
 
@@ -42,9 +61,6 @@ void setup(void) {
   
   Serial.println(time, DEC);
   delay(500);
-   
-  //lcdTestPattern();
-  //delay(1000);
   
   display.fillScreen(BLACK);
   display.setCursor(0,0);

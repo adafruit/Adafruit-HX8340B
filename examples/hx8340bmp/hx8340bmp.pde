@@ -1,4 +1,18 @@
-// bmp drawing test
+/***************************************************
+  This is an example sketch for the Adafruit 2.2" SPI display.
+  This library works with the Adafruit 2.2" TFT Breakout w/SD card
+  ----> http://www.adafruit.com/products/797
+
+  Check out the links above for our tutorials and wiring diagrams
+  These displays use SPI to communicate, 3 or 4 pins are required to
+  interface (RST is optional)
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit and open-source hardware by purchasing
+  products from Adafruit!
+
+  Written by Limor Fried/Ladyada for Adafruit Industries.
+  MIT license, all text above must be included in any redistribution
+ ****************************************************/
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_HX8340B.h>
@@ -7,10 +21,10 @@
 
 
 // If we are using the hardware SPI interface, these are the pins (for future ref)
-#define OLED_MOSI  (11)		// SDI
-#define OLED_CLK   (13)		// SCL
-#define OLED_CS    (10)		// CS
-#define OLED_RESET (9)		// RESET
+#define TFT_MOSI  (11)		// SDI
+#define TFT_CLK   (13)		// SCL
+#define TFT_CS    (10)		// CS
+#define TFT_RESET (9)		// RESET
 
 // Color definitions
 #define	BLACK           0x0000
@@ -23,7 +37,7 @@
 #define WHITE           0xFFFF
 
 // to draw images from the SD card, we will share the hardware SPI interface
-Adafruit_HX8340B display(OLED_RESET, OLED_CS);
+Adafruit_HX8340B display(TFT_RESET, TFT_CS);
 
 // For Arduino Uno/Duemilanove, etc
 //  connect the SD card with MOSI going to pin 11, MISO going to pin 12 and SCK going to pin 13 (standard)
@@ -44,7 +58,7 @@ void setup(void) {
   pinMode(SD_CS, OUTPUT);
   digitalWrite(SD_CS, HIGH);
      
-  // initialize the OLED
+  // initialize the TFT
   display.begin();
 
   Serial.println("init");
@@ -60,7 +74,7 @@ void setup(void) {
   }
   Serial.println("SD OK!");
 
-  bmpDraw("lilypad.bmp", 0, 0);
+  bmpDraw("rose.bmp", 0, 0);
 }
 
 void loop() {
