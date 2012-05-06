@@ -79,16 +79,17 @@ void Adafruit_HX8340B::begin() {
     dataport    = portOutputRegister(digitalPinToPort(sid));
     datapinmask = digitalPinToBitMask(sid);
   } else {
-    clkport    = portOutputRegister(digitalPinToPort(13));
-    clkpinmask = digitalPinToBitMask(13);
-    dataport    = portOutputRegister(digitalPinToPort(11));
-    datapinmask = digitalPinToBitMask(11);
+    clkport    = portOutputRegister(digitalPinToPort(SCK));
+    clkpinmask = digitalPinToBitMask(SCK);
+    dataport    = portOutputRegister(digitalPinToPort(MOSI));
+    datapinmask = digitalPinToBitMask(MOSI);
     SPI.begin();
     SPI.setClockDivider(SPI_CLOCK_DIV8); // 4 MHz (half speed)
     SPI.setBitOrder(MSBFIRST);
     SPI.setDataMode(SPI_MODE0);
-    pinMode(13, OUTPUT);
-    pinMode(11, OUTPUT);
+    pinMode(SCK, OUTPUT);
+    pinMode(MOSI, OUTPUT);
+    pinMode(SS, OUTPUT);
   }
 
   *csport &= ~cspinmask;
