@@ -44,9 +44,6 @@
 
  **************************************************************************/
 
-#define BLACK 0
-#define WHITE 1
-
 #define HX8340B_LCDWIDTH                  176
 #define HX8340B_LCDHEIGHT                 220
 
@@ -109,30 +106,31 @@
 #define HX8340B_N_SETGAMMAN               (0xC3)
 
 class Adafruit_HX8340B : public Adafruit_GFX {
+
  public:
+
   Adafruit_HX8340B(int8_t SID, int8_t SCLK, int8_t RST, int8_t CS);
   Adafruit_HX8340B(int8_t RST, int8_t CS);
 
-  void begin();
-  void HX8340B_command(uint8_t c);
-  void writeData(uint8_t c);
-
-  void invertDisplay(uint8_t i);
-  void display();
-  void fillDisplay(uint16_t c);
-
-  void pushColor(uint16_t color);
-  void drawPixel(int16_t x, int16_t y, uint16_t color);
-  void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t c);
-  void setWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1);
+  void     begin(),
+           setWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1),
+           fillScreen(uint16_t c),
+           pushColor(uint16_t c),
+           drawPixel(int16_t x, int16_t y, uint16_t color),
+           drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color),
+           drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color),
+           fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t c),
+           invertDisplay(uint8_t i);
   uint16_t Color565(uint8_t r, uint8_t g, uint8_t b);
 
+  // Consider making these private:
+  void     writeCommand(uint8_t c),
+           writeData(uint8_t c);
+
  private:
-  int8_t sid, sclk, rst, cs;
-  boolean hwSPI;
 
-  volatile uint8_t *dataport, *clkport, *csport;
-  uint8_t datapinmask, clkpinmask, cspinmask;
-
-  void writereg(uint8_t reg, uint8_t value);
+  boolean          hwSPI;
+  int8_t           cs, rst, sid, sclk;
+  volatile uint8_t *dataport  , *clkport  , *csport;
+  uint8_t          datapinmask, clkpinmask, cspinmask, spi_save;
 };

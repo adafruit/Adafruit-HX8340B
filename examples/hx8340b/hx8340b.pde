@@ -58,10 +58,10 @@ void setup(void) {
   uint16_t time = millis();
   display.fillScreen(BLACK);
   time = millis() - time;
-  
+
   Serial.println(time, DEC);
   delay(500);
-  
+
   display.fillScreen(BLACK);
   display.setCursor(0,0);
   display.print("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur adipiscing ante sed nibh tincidunt feugiat. Maecenas enim massa");
