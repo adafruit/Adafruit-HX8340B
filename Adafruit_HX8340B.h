@@ -14,6 +14,7 @@
   MIT license, all text above must be included in any redistribution
  ****************************************************/
 
+
 #if ARDUINO >= 100
  #include "Arduino.h"
 #else
@@ -21,6 +22,9 @@
 #endif
 
 #include <Adafruit_GFX.h>
+
+#ifndef ADAFRUIT_HX8340B
+#define ADAFRUIT_HX8340B
 
 /**************************************************************************
     BTL221722-276L CONNECTOR (HX8340B_ICVERSION_N)
@@ -136,3 +140,5 @@ class Adafruit_HX8340B : public Adafruit_GFX {
 
   void writereg(uint8_t reg, uint8_t value);
 };
+
+#endif //#ifndef ADAFRUIT_HX8340B
