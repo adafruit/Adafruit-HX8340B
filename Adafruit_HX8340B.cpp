@@ -23,7 +23,8 @@
 #include "Adafruit_HX8340B.h"
 
 // Constructor when using software SPI.  All output pins are configurable.
-Adafruit_HX8340B::Adafruit_HX8340B(int8_t SID, int8_t SCLK, int8_t RST, int8_t CS) {
+Adafruit_HX8340B::Adafruit_HX8340B(int8_t SID, int8_t SCLK, int8_t RST,
+   int8_t CS) : Adafruit_GFX(HX8340B_LCDWIDTH, HX8340B_LCDHEIGHT) {
   sid   = SID;
   sclk  = SCLK;
   rst   = RST;
@@ -33,7 +34,8 @@ Adafruit_HX8340B::Adafruit_HX8340B(int8_t SID, int8_t SCLK, int8_t RST, int8_t C
 
 // Constructor when using hardware SPI.  Faster, but must use SPI pins
 // specific to each board type (e.g. 11,13 for Uno, 51,52 for Mega, etc.)
-Adafruit_HX8340B::Adafruit_HX8340B(int8_t RST, int8_t CS) {
+Adafruit_HX8340B::Adafruit_HX8340B(int8_t RST, int8_t CS) :
+    Adafruit_GFX(HX8340B_LCDWIDTH, HX8340B_LCDHEIGHT) {
   sid   = -1;
   sclk  = -1;
   rst   = RST;
@@ -133,9 +135,6 @@ PROGMEM static prog_uchar
 };
 
 void Adafruit_HX8340B::begin() {
-  // Constructor for underlying GFX library
-  constructor(HX8340B_LCDWIDTH, HX8340B_LCDHEIGHT);
-
   // set pin directions, set pins low by default (except reset)
   csport    = portOutputRegister(digitalPinToPort(cs));
   cspinmask = digitalPinToBitMask(cs);
