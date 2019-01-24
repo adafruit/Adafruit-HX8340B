@@ -1,3 +1,7 @@
+This library has been discontinued, as we no longer carry HX8340B based displays
+
+----------------------------------------------------------------------
+
 This is a library for the Adafruit 2.2" SPI display.
 This library works with the Adafruit 2.2" TFT Breakout w/SD card
   ----> http://www.adafruit.com/products/797
